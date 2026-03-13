@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ app_name }} — CI/CD Project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #0a0e17;
+      --surface:   #111827;
+      --border:    #1f2d45;
+      --accent:    #00d4ff;
+      --accent2:   #7c3aed;
+      --green:     #10b981;
+      --orange:    #f59e0b;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-sans: 'Syne', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* ── Header ── */
+    header {
+      padding: 32px 0 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+    }
+    .logo-text { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
+    .logo-text span { color: var(--accent); }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid;
+    }
+    .badge-green  { color: var(--green);  border-color: var(--green);  background: rgba(16,185,129,.08); }
+    .badge-blue   { color: var(--accent); border-color: var(--accent); background: rgba(0,212,255,.08); }
+
+    /* ── Status Bar ── */
+    .status-bar {
+      display: flex;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .status-item {
+      display: flex; align-items: center; gap: 7px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    .dot-green  { background: var(--green); }
+    .dot-blue   { background: var(--accent); }
+    .dot-orange { background: var(--orange); }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 0 40px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 16px;
+    }
+    .hero h1 .highlight {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 520px;
+      margin: 0 auto 32px;
+      font-family: var(--font-mono);
+      line-height: 1.7;
+    }
+
+    /* ── Info Cards Grid ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px;
+      transition: border-color .2s, transform .2s;
+    }
+    .card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+    }
+    .card-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .card-value {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      word-break: break-all;
+    }
+    .card-value.accent { color: var(--accent); }
+    .card-value.green  { color: var(--green); }
+
+    /* ── Pipeline Section ── */
+    .section-title {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pipeline {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 32px;
+      overflow-x: auto;
+    }
+    .pipe-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 90px;
+    }
+    .pipe-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      border: 1px solid var(--border);
+    }
+    .pipe-icon.done   { background: rgba(16,185,129,.12);  border-color: var(--green); }
+    .pipe-icon.active { background: rgba(0,212,255,.12);   border-color: var(--accent); }
+    .pipe-icon.next   { background: rgba(124,58,237,.12);  border-color: var(--accent2); }
+    .pipe-label {
+      font-family: var(--font-mono);
+      font-size: 0.63rem;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: .5px;
+    }
+    .pipe-connector {
+      flex: 1; height: 2px;
+      background: linear-gradient(90deg, var(--green), var(--accent));
+      min-width: 20px;
+    }
+
+    /* ── Concepts Grid ── */
+    .concepts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 40px;
+    }
+    .concept-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .concept-card h3 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .concept-card p {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* ── Terminal Block ── */
+    .terminal {
+      background: #060d18;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+    .terminal-header {
+      background: var(--surface);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .term-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .term-red    { background: #ff5f57; }
+    .term-yellow { background: #febc2e; }
+    .term-green  { background: #28c840; }
+    .term-title {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-left: 8px;
+    }
+    .terminal-body {
+      padding: 20px 22px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      line-height: 1.8;
+    }
+    .term-line { display: flex; gap: 10px; }
+    .term-prompt { color: var(--green); flex-shrink: 0; }
+    .term-cmd    { color: var(--text); }
+    .term-out    { color: var(--muted); padding-left: 20px; }
+    .term-success { color: var(--green); padding-left: 20px; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 28px 0;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    footer p {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    footer p span { color: var(--accent); }
+
+    /* ── Animations ── */
+    .fade-in { animation: fadeUp .6s ease both; }
+    .fade-in:nth-child(2) { animation-delay: .1s; }
+    .fade-in:nth-child(3) { animation-delay: .2s; }
+    .fade-in:nth-child(4) { animation-delay: .3s; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">🐳</div>
+        <div class="logo-text">{{ app_name }}<span>.</span></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <span class="badge badge-green">● RUNNING</span>
+        <span class="badge badge-blue">v{{ info.version }}</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-item"><div class="dot dot-green"></div>Container Healthy</div>
+    <div class="status-item"><div class="dot dot-blue"></div>CI/CD Active</div>
+    <div class="status-item"><div class="dot dot-orange"></div>DockerHub Synced</div>
+    <div class="status-item" style="margin-left:auto;color:var(--muted);">
+      ⏱ {{ info.timestamp }}
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero fade-in">
+    <p class="hero-eyebrow">Academic Project · DevOps Engineering</p>
+    <h1>Dockerized Web App<br>with <span class="highlight">Automated CI/CD</span></h1>
+    <p class="hero-sub">
+      A production-grade deployment pipeline using Docker, GitHub Actions, and AWS EC2.
+      Every commit triggers an automated build, test, and deploy cycle.
+    </p>
+  </section>
+
+  <!-- System Info Cards -->
+  <div class="section-title">Runtime Environment</div>
+  <div class="cards fade-in">
+    <div class="card">
+      <div class="card-label">Container ID</div>
+      <div class="card-value accent">{{ info.container_id[:12] }}</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Status</div>
+      <div class="card-value green">● Healthy</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Environment</div>
+      <div class="card-value">{{ info.environment }}</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Python Version</div>
+      <div class="card-value">{{ info.python_version }}</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Platform</div>
+      <div class="card-value">{{ info.platform }}</div>
+    </div>
+    <div class="card">
+      <div class="card-label">App Version</div>
+      <div class="card-value accent">v{{ info.version }}</div>
+    </div>
+  </div>
+
+  <!-- CI/CD Pipeline Diagram -->
+  <div class="section-title">CI/CD Pipeline</div>
+  <div class="pipeline fade-in">
+    <div class="pipe-step">
+      <div class="pipe-icon done">💻</div>
+      <div class="pipe-label">Dev<br>Commits</div>
+    </div>
+    <div class="pipe-connector"></div>
+    <div class="pipe-step">
+      <div class="pipe-icon done">🔁</div>
+      <div class="pipe-label">GitHub<br>Actions</div>
+    </div>
+    <div class="pipe-connector"></div>
+    <div class="pipe-step">
+      <div class="pipe-icon active">🐳</div>
+      <div class="pipe-label">Docker<br>Build</div>
+    </div>
+    <div class="pipe-connector"></div>
+    <div class="pipe-step">
+      <div class="pipe-icon done">📦</div>
+      <div class="pipe-label">DockerHub<br>Push</div>
+    </div>
+    <div class="pipe-connector"></div>
+    <div class="pipe-step">
+      <div class="pipe-icon next">☁️</div>
+      <div class="pipe-label">AWS EC2<br>Deploy</div>
+    </div>
+    <div class="pipe-connector"></div>
+    <div class="pipe-step">
+      <div class="pipe-icon done">✅</div>
+      <div class="pipe-label">Live &<br>Running</div>
+    </div>
+  </div>
+
+  <!-- Docker Concepts -->
+  <div class="section-title">Key Docker Concepts</div>
+  <div class="concepts fade-in">
+    <div class="concept-card">
+      <h3>🖼️ Docker Image</h3>
+      <p>A read-only, layered blueprint of your application — OS, runtime, dependencies, and code baked into one portable artifact.</p>
+    </div>
+    <div class="concept-card">
+      <h3>📦 Container</h3>
+      <p>A running instance of an image. Isolated, lightweight, and ephemeral. Starts in milliseconds and runs identically anywhere.</p>
+    </div>
+    <div class="concept-card">
+      <h3>📄 Dockerfile</h3>
+      <p>A declarative script of instructions that tells Docker how to build your image layer by layer, from base OS to final entrypoint.</p>
+    </div>
+    <div class="concept-card">
+      <h3>🐳 DockerHub</h3>
+      <p>A cloud registry for Docker images. Push your image here and pull it on any server in the world — including your EC2 instance.</p>
+    </div>
+  </div>
+
+  <!-- Terminal Block -->
+  <div class="section-title">Quick Start Commands</div>
+  <div class="terminal fade-in">
+    <div class="terminal-header">
+      <div class="term-dot term-red"></div>
+      <div class="term-dot term-yellow"></div>
+      <div class="term-dot term-green"></div>
+      <span class="term-title">bash — devops-dashboard</span>
+    </div>
+    <div class="terminal-body">
+      <div class="term-line"><span class="term-prompt">$</span><span class="term-cmd">docker build -t devops-dashboard .</span></div>
+      <div class="term-out">Successfully built 3a9f2c1d8e4b</div>
+      <div class="term-line"><span class="term-prompt">$</span><span class="term-cmd">docker run -d -p 5000:5000 devops-dashboard</span></div>
+      <div class="term-out">a7f3c2e91b84d0f26a...</div>
+      <div class="term-line"><span class="term-prompt">$</span><span class="term-cmd">docker push yourusername/devops-dashboard:latest</span></div>
+      <div class="term-success">✓ Image pushed to DockerHub</div>
+      <div class="term-line"><span class="term-prompt">$</span><span class="term-cmd">curl http://localhost:5000/health</span></div>
+      <div class="term-success">{"status":"healthy","version":"1.0.0"}</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>Built with <span>Flask + Docker + GitHub Actions + AWS EC2</span></p>
+    <p>Academic Project · <span>Dockerized Web App Deployment with Automated CI/CD</span></p>
+  </footer>
+
+</div>
+</body>
+</html>
