@@ -12,7 +12,7 @@ from flask import Flask, render_template, jsonify
 app = Flask(__name__)
 
 # App metadata
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.1.0"
 APP_NAME = "DevOps Dashboard"
 
 
