@@ -3,10 +3,12 @@
 ![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?logo=github-actions&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-3.12-2496ED?logo=docker&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)
-![AWS](https://img.shields.io/badge/AWS-EC2-FF9900?logo=amazonaws&logoColor=white)
+![Render](https://img.shields.io/badge/Cloud-Render-46E3B7?logo=render&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 
-> **Academic Project** — A production-grade deployment pipeline demonstrating Docker containerization, automated CI/CD with GitHub Actions, and cloud deployment on AWS EC2.
+> **Academic Project** — A production-grade deployment pipeline demonstrating Docker containerization, automated CI/CD with GitHub Actions, and cloud deployment on Render Cloud.
+
+🌐 **Live App**: https://devops-dashboard-t0u2.onrender.com
 
 ---
 
@@ -19,7 +21,7 @@
 5. [Local Setup & Running](#-local-setup--running)
 6. [Docker Commands](#-docker-commands)
 7. [DockerHub: Push & Pull](#-dockerhub-push--pull)
-8. [AWS EC2 Deployment](#-aws-ec2-deployment)
+8. [Render Cloud Deployment](#-render-cloud-deployment)
 9. [GitHub Actions CI/CD](#-github-actions-cicd)
 10. [API Endpoints](#-api-endpoints)
 11. [Architecture Diagram](#-architecture-diagram)
@@ -36,15 +38,15 @@ This project demonstrates a **complete DevOps workflow** for a containerized web
 | Containerization | Docker (multi-stage build) |
 | Image Registry | DockerHub |
 | CI/CD Pipeline | GitHub Actions |
-| Cloud Deployment | AWS EC2 (Ubuntu 22.04) |
+| Cloud Deployment | Render Cloud |
 | Production Server | Gunicorn WSGI |
 
 ### What happens on every `git push`:
 1. GitHub Actions detects the push to `main`
 2. Python tests are run automatically
 3. A Docker image is built from the `Dockerfile`
-4. The image is pushed to DockerHub with a `latest` and SHA-tagged version
-5. GitHub Actions SSHes into the EC2 server and pulls + restarts the container
+4. The image is pushed to DockerHub with a `latest` tag
+5. GitHub Actions triggers Render to pull and redeploy the latest image
 
 ---
 
@@ -80,10 +82,10 @@ CMD ["gunicorn", ...]     # Default startup command
 This project uses a **multi-stage build** to keep the final image small: dependencies are installed in a `builder` stage, and only the compiled result is copied to the final runtime image.
 
 ### DockerHub
-**DockerHub** is a cloud-based container registry — the "GitHub for Docker images." After building an image locally, you `push` it to DockerHub, making it available globally. Your EC2 server then `pull`s the latest image during deployment, ensuring it always runs the newest code.
+**DockerHub** is a cloud-based container registry — the "GitHub for Docker images." After building an image locally, you `push` it to DockerHub, making it available globally. Render then pulls the latest image during deployment, ensuring it always runs the newest code.
 
 ```
-Local Build  ──push──►  DockerHub  ──pull──►  EC2 Server
+Local Build  ──push──►  DockerHub  ──pull──►  Render Cloud
 ```
 
 ---
@@ -119,15 +121,14 @@ Install the following tools before starting:
 
 | Tool | Version | Install |
 |------|---------|---------|
-| Docker Desktop | Latest | https://docs.docker.com/get-docker/ |
+| Docker | Latest | https://docs.docker.com/get-docker/ |
 | Git | Latest | https://git-scm.com/ |
 | Python | 3.12+ | https://python.org/ |
-| AWS CLI | v2 | https://aws.amazon.com/cli/ |
 
 Accounts needed:
 - **DockerHub**: https://hub.docker.com (free)
 - **GitHub**: https://github.com (free)
-- **AWS**: https://aws.amazon.com (free tier eligible)
+- **Render**: https://render.com (free tier)
 
 ---
 
@@ -137,13 +138,12 @@ Accounts needed:
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/devops-dashboard.git
-cd devops-dashboard
+git clone https://github.com/VijayPant375/Devops-Dashboard.git
+cd Devops-Dashboard
 
 # Create virtual environment
-python -m venv venv
-source venv/bin/activate          # Mac/Linux
-venv\Scripts\activate             # Windows
+python3 -m venv venv
+source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
@@ -180,7 +180,7 @@ Visit: http://localhost:5000
 docker build -t devops-dashboard:latest .
 
 # Build with your DockerHub username
-docker build -t YOUR_DOCKERHUB_USERNAME/devops-dashboard:latest .
+docker build -t vijaypant375/devops-dashboard:latest .
 ```
 
 ### Run the container
@@ -243,83 +243,51 @@ docker image prune -a
 docker login
 
 # Step 2 — Tag the image with your DockerHub username
-docker tag devops-dashboard:latest YOUR_USERNAME/devops-dashboard:latest
+docker tag devops-dashboard:latest vijaypant375/devops-dashboard:latest
 
 # Step 3 — Push to DockerHub
-docker push YOUR_USERNAME/devops-dashboard:latest
+docker push vijaypant375/devops-dashboard:latest
 ```
 
-Your image is now publicly available at:
-`https://hub.docker.com/r/YOUR_USERNAME/devops-dashboard`
+Image available at:
+`https://hub.docker.com/r/vijaypant375/devops-dashboard`
 
 ### Pull and run from any server
 
 ```bash
 # Pull the image from DockerHub
-docker pull YOUR_USERNAME/devops-dashboard:latest
+docker pull vijaypant375/devops-dashboard:latest
 
 # Run it
-docker run -d -p 80:5000 YOUR_USERNAME/devops-dashboard:latest
+docker run -d -p 5000:5000 vijaypant375/devops-dashboard:latest
 ```
 
 ---
 
-## ☁️ AWS EC2 Deployment
+## ☁️ Render Cloud Deployment
 
-### Step 1 — Launch EC2 Instance
+### Step 1 — Create a Render account
+1. Go to https://render.com → Sign in with GitHub
 
-1. Log in to AWS Console → EC2 → **Launch Instance**
-2. Choose **Ubuntu Server 22.04 LTS** (free tier eligible)
-3. Select **t2.micro** (free tier)
-4. Create or select a **Key Pair** — download the `.pem` file
-5. Security Group — add inbound rules:
-   - SSH (port 22) — your IP
-   - HTTP (port 80) — Anywhere (0.0.0.0/0)
-6. Launch the instance
+### Step 2 — Deploy from DockerHub image
+1. Click **New** → **Web Service**
+2. Select **Existing Image** tab
+3. Enter image URL: `vijaypant375/devops-dashboard:latest`
+4. Click **Connect**
 
-### Step 2 — Install Docker on EC2
+### Step 3 — Configure the service
+- **Name**: `devops-dashboard`
+- **Instance Type**: Free
+- **Environment Variable**: `PORT` = `5000`
+- Click **Deploy Web Service**
 
+### Step 4 — Access your live app
+Your app is live at: `https://devops-dashboard-t0u2.onrender.com`
+
+### Step 5 — Trigger redeployment
+Use the Render Deploy Hook URL to trigger redeployment from CI/CD:
 ```bash
-# SSH into your instance
-ssh -i your-key.pem ubuntu@YOUR_EC2_PUBLIC_IP
-
-# Update packages
-sudo apt update && sudo apt upgrade -y
-
-# Install Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-
-# Add ubuntu user to docker group (no sudo needed)
-sudo usermod -aG docker ubuntu
-
-# Log out and back in, then verify
-docker --version
-```
-
-### Step 3 — Deploy manually
-
-```bash
-# Pull latest image
-docker pull YOUR_USERNAME/devops-dashboard:latest
-
-# Run the container (port 80 → 5000 inside container)
-docker run -d \
-  --name devops-dashboard \
-  --restart unless-stopped \
-  -p 80:5000 \
-  YOUR_USERNAME/devops-dashboard:latest
-```
-
-Your app is now live at: `http://YOUR_EC2_PUBLIC_IP`
-
-### Step 4 — Update deployment
-
-```bash
-# Pull latest, stop old, start new
-docker pull YOUR_USERNAME/devops-dashboard:latest
-docker stop devops-dashboard && docker rm devops-dashboard
-docker run -d --name devops-dashboard --restart unless-stopped -p 80:5000 YOUR_USERNAME/devops-dashboard:latest
+curl -X POST "YOUR_RENDER_DEPLOY_HOOK_URL"
 ```
 
 ---
@@ -332,19 +300,11 @@ The pipeline in `.github/workflows/cicd.yml` automates everything above.
 
 Go to: **GitHub Repo → Settings → Secrets and variables → Actions → New repository secret**
 
-| Secret Name | Description | Example |
-|-------------|-------------|---------|
-| `DOCKERHUB_USERNAME` | Your DockerHub username | `johnsmith` |
-| `DOCKERHUB_TOKEN` | DockerHub access token (not password) | `dckr_pat_xxx...` |
-| `EC2_HOST` | Public IP of EC2 instance | `54.123.45.67` |
-| `EC2_USERNAME` | EC2 login user | `ubuntu` |
-| `EC2_SSH_KEY` | Contents of your `.pem` private key | `-----BEGIN RSA...` |
-
-### Getting a DockerHub Token
-
-1. DockerHub → Account Settings → Security → **New Access Token**
-2. Give it a name (e.g., `github-actions`)
-3. Copy the token and save it as `DOCKERHUB_TOKEN` in GitHub Secrets
+| Secret Name | Description |
+|-------------|-------------|
+| `DOCKERHUB_USERNAME` | Your DockerHub username |
+| `DOCKERHUB_TOKEN` | DockerHub access token |
+| `RENDER_DEPLOY_HOOK` | Render deploy hook URL |
 
 ### Pipeline Stages
 
@@ -364,16 +324,14 @@ git push main
   ├─ Login to DockerHub
   ├─ Setup Docker Buildx
   ├─ Build image (with layer caching)
-  └─ Push image (latest + sha tags)
+  └─ Push image (latest tag)
 
       │ (on success)
       ▼
   🚀 DEPLOY JOB
-  ├─ SSH into EC2
-  ├─ docker pull latest
-  ├─ docker stop old container
-  ├─ docker run new container
-  └─ Health check verification
+  └─ Trigger Render deploy hook
+     → Render pulls latest image
+     → Container restarts automatically
 ```
 
 ---
@@ -390,12 +348,12 @@ git push main
 
 ```bash
 # Health check
-curl http://localhost:5000/health
-# {"status":"healthy","version":"1.0.0","timestamp":"2024-01-01T12:00:00"}
+curl https://devops-dashboard-t0u2.onrender.com/health
+# {"status":"healthy","version":"1.1.0","timestamp":"2026-03-13T13:00:00"}
 
 # System info
-curl http://localhost:5000/api/info
-# {"hostname":"a7f3c2e91b84","platform":"Linux","python_version":"3.12.0",...}
+curl https://devops-dashboard-t0u2.onrender.com/api/info
+# {"hostname":"srv-d6q1blf5","platform":"Linux","python_version":"3.12.13",...}
 ```
 
 ---
@@ -416,13 +374,13 @@ curl http://localhost:5000/api/info
 │  [Test] → [Build Docker Image] → [Push to DockerHub]         │
 └─────────────────────────────────────────────────────────────┘
           │                              │
-          │ SSH Deploy                   │ Push Image
+          │ Deploy Hook                  │ Push Image
           ▼                              ▼
 ┌─────────────────────┐      ┌─────────────────────┐
-│     AWS EC2          │      │      DockerHub       │
-│  Ubuntu 22.04        │◄─────│  your/devops-dash   │
-│  Docker + Container  │ Pull │  :latest             │
-│  Port 80 → Public IP │      │  :sha-abc123         │
+│    Render Cloud      │      │      DockerHub       │
+│  Docker Container    │◄─────│  vijaypant375/      │
+│  Gunicorn WSGI       │ Pull │  devops-dashboard   │
+│  Public HTTPS URL    │      │  :latest             │
 └─────────────────────┘      └─────────────────────┘
 ```
 
@@ -433,7 +391,7 @@ curl http://localhost:5000/api/info
 - [Docker Official Documentation](https://docs.docker.com/)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Flask Documentation](https://flask.palletsprojects.com/)
-- [AWS EC2 Getting Started](https://aws.amazon.com/ec2/getting-started/)
+- [Render Documentation](https://render.com/docs)
 - [DockerHub Documentation](https://docs.docker.com/docker-hub/)
 
 ---
